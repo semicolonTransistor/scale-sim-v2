@@ -3,14 +3,14 @@ import os
 from scalesim.scale_config import scale_config as cfg
 from scalesim.topology_utils import topologies as topo
 from scalesim.single_layer_sim import single_layer_sim as layer_sim
-
+import pathlib
 
 class simulator:
     def __init__(self):
         self.conf = cfg()
         self.topo = topo()
 
-        self.top_path = "./"
+        self.top_path = pathlib.Path("./")
         self.verbose = True
         self.save_trace = True
 
@@ -25,7 +25,7 @@ class simulator:
     def set_params(self,
                    config_obj=cfg(),
                    topo_obj=topo(),
-                   top_path="./",
+                   top_path=pathlib.Path("./"),
                    verbosity=True,
                    save_trace=True
                    ):
@@ -33,7 +33,7 @@ class simulator:
         self.conf = config_obj
         self.topo = topo_obj
 
-        self.top_path = top_path
+        self.top_path = pathlib.Path(top_path)
         self.verbose = verbosity
         self.save_trace = save_trace
 
@@ -56,15 +56,13 @@ class simulator:
 
             self.single_layer_sim_object_list.append(this_layer_sim)
 
-        if not os.path.isdir(self.top_path):
-            cmd = 'mkdir ' + self.top_path
-            os.system(cmd)
+        if not self.top_path.is_dir():
+            self.top_path.mkdir(parents=True)
 
-        report_path = self.top_path + '/' + self.conf.get_run_name()
+        report_path = self.top_path / self.conf.get_run_name()
 
-        if not os.path.isdir(report_path):
-            cmd = 'mkdir ' + report_path
-            os.system(cmd)
+        if not report_path.is_dir():
+            report_path.mkdir()
 
         self.top_path = report_path
 
@@ -112,18 +110,18 @@ class simulator:
     def generate_reports(self):
         assert self.all_layer_run_done, 'Layer runs are not done yet'
 
-        compute_report_name = self.top_path + '/COMPUTE_REPORT.csv'
+        compute_report_name = self.top_path / 'COMPUTE_REPORT.csv'
         compute_report = open(compute_report_name, 'w')
         header = 'LayerID, Total Cycles, Stall Cycles, Overall Util %, Mapping Efficiency %, Compute Util %,\n'
         compute_report.write(header)
 
-        bandwidth_report_name = self.top_path + '/BANDWIDTH_REPORT.csv'
+        bandwidth_report_name = self.top_path / 'BANDWIDTH_REPORT.csv'
         bandwidth_report = open(bandwidth_report_name, 'w')
         header = 'LayerID, Avg IFMAP SRAM BW, Avg FILTER SRAM BW, Avg OFMAP SRAM BW, '
         header += 'Avg IFMAP DRAM BW, Avg FILTER DRAM BW, Avg OFMAP DRAM BW,\n'
         bandwidth_report.write(header)
 
-        detail_report_name = self.top_path + '/DETAILED_ACCESS_REPORT.csv'
+        detail_report_name = self.top_path / 'DETAILED_ACCESS_REPORT.csv'
         detail_report = open(detail_report_name, 'w')
         header = 'LayerID, '
         header += 'SRAM IFMAP Start Cycle, SRAM IFMAP Stop Cycle, SRAM IFMAP Reads, '

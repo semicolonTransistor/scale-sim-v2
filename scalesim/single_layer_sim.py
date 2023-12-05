@@ -7,7 +7,7 @@ from scalesim.compute.systolic_compute_os import systolic_compute_os
 from scalesim.compute.systolic_compute_ws import systolic_compute_ws
 from scalesim.compute.systolic_compute_is import systolic_compute_is
 from scalesim.memory.double_buffered_scratchpad_mem import double_buffered_scratchpad as mem_dbsp
-
+import pathlib
 
 class single_layer_sim:
     def __init__(self):
@@ -182,21 +182,20 @@ class single_layer_sim:
         self.runs_ready = True
 
     # This will write the traces
-    def save_traces(self, top_path):
+    def save_traces(self, top_path: pathlib.Path):
         assert self.params_set_flag, 'Parameters are not set'
 
-        dir_name = top_path + '/layer' + str(self.layer_id)
-        if not os.path.isdir(dir_name):
-            cmd = 'mkdir ' + dir_name
-            os.system(cmd)
+        dir_name = top_path / f'layer{self.layer_id}'
+        if not dir_name.is_dir():
+            dir_name.mkdir()
 
-        ifmap_sram_filename = dir_name +  '/IFMAP_SRAM_TRACE.csv'
-        filter_sram_filename = dir_name + '/FILTER_SRAM_TRACE.csv'
-        ofmap_sram_filename = dir_name +  '/OFMAP_SRAM_TRACE.csv'
+        ifmap_sram_filename = dir_name / 'IFMAP_SRAM_TRACE.csv'
+        filter_sram_filename = dir_name / 'FILTER_SRAM_TRACE.csv'
+        ofmap_sram_filename = dir_name / 'OFMAP_SRAM_TRACE.csv'
 
-        ifmap_dram_filename = dir_name +  '/IFMAP_DRAM_TRACE.csv'
-        filter_dram_filename = dir_name + '/FILTER_DRAM_TRACE.csv'
-        ofmap_dram_filename = dir_name +  '/OFMAP_DRAM_TRACE.csv'
+        ifmap_dram_filename = dir_name / 'IFMAP_DRAM_TRACE.csv'
+        filter_dram_filename = dir_name / 'FILTER_DRAM_TRACE.csv'
+        ofmap_dram_filename = dir_name / 'OFMAP_DRAM_TRACE.csv'
 
         self.memory_system.print_ifmap_sram_trace(ifmap_sram_filename)
         self.memory_system.print_ifmap_dram_trace(ifmap_dram_filename)
