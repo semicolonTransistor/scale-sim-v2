@@ -4,6 +4,8 @@ from scalesim.scale_config import scale_config as cfg
 from scalesim.topology_utils import topologies as topo
 from scalesim.single_layer_sim import single_layer_sim as layer_sim
 import pathlib
+import typing
+import os
 
 class simulator:
     def __init__(self):
@@ -25,7 +27,7 @@ class simulator:
     def set_params(self,
                    config_obj=cfg(),
                    topo_obj=topo(),
-                   top_path=pathlib.Path("./"),
+                   top_path: typing.Union[os.PathLike, str, bytes] = pathlib.Path("./"),
                    verbosity=True,
                    save_trace=True
                    ):

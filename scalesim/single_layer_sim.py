@@ -8,6 +8,8 @@ from scalesim.compute.systolic_compute_ws import systolic_compute_ws
 from scalesim.compute.systolic_compute_is import systolic_compute_is
 from scalesim.memory.double_buffered_scratchpad_mem import double_buffered_scratchpad as mem_dbsp
 import pathlib
+import os
+import typing
 
 class single_layer_sim:
     def __init__(self):
@@ -182,9 +184,11 @@ class single_layer_sim:
         self.runs_ready = True
 
     # This will write the traces
-    def save_traces(self, top_path: pathlib.Path):
+    def save_traces(self, top_path: typing.Union[os.PathLike, str, bytes]):
         assert self.params_set_flag, 'Parameters are not set'
 
+        # convert input to a pathlib Path
+        top_path = pathlib.Path(top_path)
         dir_name = top_path / f'layer{self.layer_id}'
         if not dir_name.is_dir():
             dir_name.mkdir()

@@ -1,7 +1,9 @@
 import configparser as cp
 import os
 import sys
-
+import typing
+import typing
+import pathlib
 
 class scale_config:
     def __init__(self):
@@ -18,7 +20,7 @@ class scale_config:
         self.ifmap_offset = 0
         self.filter_offset = 10000000
         self.ofmap_offset = 20000000
-        self.topofile = ""
+        self.topofile: typing.Union[pathlib.Path, None] = None
         self.bandwidths = []
         self.valid_conf_flag = False
 
@@ -67,7 +69,7 @@ class scale_config:
             print("WARNING: Invalid dataflow")
 
         if config.has_section('network_presets'):  # Read network_presets
-            self.topofile = config.get(section, 'TopologyCsvLoc').split('"')[1]
+            self.topofile = pathlib.Path(config.get(section, 'TopologyCsvLoc').split('"')[1])
 
         self.valid_conf_flag = True
 
@@ -98,7 +100,7 @@ class scale_config:
             self.use_user_bandwidth = False
 
         if len(conf_list) == 15:
-            self.topofile = conf_list[14]
+            self.topofile = pathlib.Path(conf_list[14])
 
         self.valid_conf_flag = True
 
@@ -132,7 +134,7 @@ class scale_config:
 
         section = 'network_presets'
         config.add_section(section)
-        topofile = '"' + self.topofile + '"'
+        topofile = f'"{self.topofile}"'
         config.set(section, 'TopologyCsvLoc', str(topofile))
 
         with open(conf_file_out, 'w') as configfile:
@@ -153,8 +155,11 @@ class scale_config:
         self.ofmap_sz_kb = ofmap_size_kb
 
     #
-    def set_topology_file(self, topofile=''):
-        self.topofile = topofile
+    def set_topology_file(self, topofile: typing.Union[os.PathLike, str, bytes, None] = None):
+        if topofile is not None:
+            self.topofile = pathlib.Path(topofile)
+        else:
+            self.topofile = None
 
     #
     def set_offsets(self,
@@ -222,14 +227,17 @@ class scale_config:
         if not self.valid_conf_flag:
             print("ERROR: scale_config.get_topology_path() : Config data is not valid")
             return
-        return self.topofile
+        return str(self.topofile)
 
     def get_topology_name(self):
         if not self.valid_conf_flag:
             print("ERROR: scale_config.get_topology_name() : Config data is not valid")
             return
 
-        name = self.topofile.split('/')[-1].strip()
+        if self.topofile is None:
+            return
+
+        name = self.topofile.parts[-1].strip()
         name = name.split('.')[0]
 
         return name

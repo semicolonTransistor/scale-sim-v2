@@ -1,4 +1,7 @@
 import math
+import os
+import pathlib
+import typing
 
 
 class topologies(object):
@@ -27,7 +30,7 @@ class topologies(object):
 
     #
     def load_layer_params_from_list(self, layer_name, elems_list=[]):
-        self.topo_file_name = ''
+        self.topo_file_name = None
         self.current_toponame = ''
         self.layer_name = layer_name
         self.append_topo_arrays(layer_name, elems_list)
@@ -36,16 +39,17 @@ class topologies(object):
         self.topo_load_flag = True
 
     #
-    def load_arrays(self, topofile='', mnk_inputs=False):
+    def load_arrays(self, topofile: typing.Union[os.PathLike, str, bytes], mnk_inputs=False):
         if mnk_inputs:
             self.load_arrays_gemm(topofile)
         else:
             self.load_arrays_conv(topofile)
 
     #
-    def load_arrays_gemm(self, topofile=''):
+    def load_arrays_gemm(self, topofile: typing.Union[os.PathLike, str, bytes]):
 
-        self.topo_file_name = topofile.split('/')[-1]
+        topofile = pathlib.Path(topofile)
+        self.topo_file_name = topofile.parts[-1]
         name_arr = self.topo_file_name.split('.')
         if len(name_arr) > 1:
             self.current_topo_name = self.topo_file_name.split('.')[-2]
@@ -79,9 +83,10 @@ class topologies(object):
         self.topo_load_flag = True
 
     # Load the topology data from the file
-    def load_arrays_conv(self, topofile=""):
+    def load_arrays_conv(self, topofile: typing.Union[os.PathLike, str, bytes]):
         first = True
-        self.topo_file_name = topofile.split('/')[-1]
+        topofile = pathlib.Path(topofile)
+        self.topo_file_name = topofile.parts[-1]
         name_arr = self.topo_file_name.split('.')
         if len(name_arr) > 1:
             self.current_topo_name = self.topo_file_name.split('.')[-2]
@@ -109,18 +114,20 @@ class topologies(object):
 
     # Write the contents into a csv file
     def write_topo_file(self,
-                      path="",
-                      filename=""
+                      path: typing.Union[os.PathLike, str, bytes, None] = None,
+                      filename: typing.Union[str, None] = None
                       ):
-        if path == "":
+        if path is None:
             print("WARNING: topology_utils.write_topo_file: No path specified writing to the cwd")
-            path = "./" 
+            path = pathlib.Path("./")
+        else:
+            path = pathlib.Path(path)
 
-        if filename == "":
+        if filename is None:
             print("ERROR: topology_utils.write_topo_file: No filename provided")
             return
 
-        filename = path + "/" + filename
+        filename = path / filename
 
         if not self.topo_load_flag:
             print("ERROR: topology_utils.write_topo_file: No data loaded")
@@ -193,7 +200,7 @@ class topologies(object):
         self.num_layers += 1
 
     # calculate hyper-parameters (ofmap dimensions, number of MACs, and window size of filter)
-    def topo_calc_hyperparams(self, topofilename=""):
+    def topo_calc_hyperparams(self, topofilename: typing.Union[os.PathLike, str, bytes, None] = None):
         if not self.topo_load_flag:
             self.load_arrays(topofilename)
         self.layers_calculated_hyperparams = []

@@ -2,7 +2,9 @@ import os
 from scalesim.scale_config import scale_config
 from scalesim.topology_utils import topologies
 from scalesim.simulator import simulator as sim
-
+import typing
+import pathlib
+import os
 
 class scalesim:
     def __init__(self,
@@ -17,8 +19,8 @@ class scalesim:
         self.topo = topologies()
 
         # File paths
-        self.config_file = ''
-        self.topology_file = ''
+        self.config_file: typing.Optional[pathlib.Path] = None
+        self.topology_file: typing.Optional[pathlib.Path] = None
 
         # Member objects
         #self.runner = r.run_nets()
@@ -35,21 +37,23 @@ class scalesim:
 
     #
     def set_params(self,
-                   config_filename='',
-                   topology_filename='' ):
+                   config_filename: typing.Union[os.PathLike, str, bytes],
+                   topology_filename: typing.Optional[typing.Union[os.PathLike, str, bytes]] = None):
         # First check if the user provided a valid topology file
-        if not topology_filename == '':
-            if not os.path.exists(topology_filename):
+        if topology_filename is not None:
+            topology_filename = pathlib.Path(topology_filename)
+            if not topology_filename.exists():
                 print("ERROR: scalesim.scale.py: Topology file not found")
-                print("Input file:" + topology_filename)
+                print(f"Input file: {topology_filename}")
                 print('Exiting')
                 exit()
             else:
                 self.topology_file = topology_filename
 
-        if not os.path.exists(config_filename):
+        config_filename = pathlib.Path(config_filename)
+        if not config_filename.exists():
             print("ERROR: scalesim.scale.py: Config file not found") 
-            print("Input file:" + config_filename)
+            print(f"Input file: {config_filename}")
             print('Exiting')
             exit()
         else: 
@@ -60,7 +64,7 @@ class scalesim:
 
         # Take the CLI topology over the one in config
         # If topology is not passed from CLI take the one from config
-        if self.topology_file == '':
+        if self.topology_file is None:
             self.topology_file = self.config.get_topology_path()
         else:
             self.config.set_topology_file(self.topology_file)
@@ -72,9 +76,9 @@ class scalesim:
         #self.config.scale_memory_maps(num_layers=num_layers)
 
     #
-    def run_scale(self, top_path='.'):
+    def run_scale(self, top_path: typing.Union[os.PathLike, str, bytes] = pathlib.Path('.')):
 
-        self.top_path = top_path
+        self.top_path = pathlib.Path(top_path)
         save_trace = not self.save_space
         self.runner.set_params(
             config_obj=self.config,
@@ -133,7 +137,7 @@ class scalesim:
         print("SRAM Filter (kB): \t" + str(filter_kb))
         print("SRAM OFMAP (kB): \t" + str(ofmap_kb))
         print("Dataflow: \t" + df_string)
-        print("CSV file path: \t" + self.config.get_topology_path())
+        print("CSV file path: \t" + str(self.config.get_topology_path()))
 
         if self.config.use_user_dram_bandwidth():
             print("Bandwidth: \t" + self.config.get_bandwidths_as_string())
